@@ -1,0 +1,40 @@
+{
+  "cats": [
+    {
+      "id": "1",
+      "name": "Lily",
+      "breed": "Long hair",
+      "age": 12,
+      "ownerId": "0"
+    },
+    {
+      "id": "2",
+      "name": "Vesper",
+      "breed": "Orange tabby",
+      "age": 4,
+      "ownerId": "1"
+    },
+    {
+      "id": "4",
+      "name": "Puzzle",
+      "breed": "Calico",
+      "age": 5
+    },
+    {
+      "id": "5",
+      "name": "Antony",
+      "breed": "British Blue",
+      "ownerId": "0"
+    }
+  ],
+  "owners": [
+    {
+      "id": "0",
+      "name": "Annette"
+    },
+    {
+      "id": "1",
+      "name": "Lucas"
+    }
+  ]
+}
