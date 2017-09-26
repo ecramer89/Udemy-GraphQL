@@ -40,9 +40,10 @@ const OwnerType = new GraphQLObjectType({
             cats: {
                 //note that we need to instantiate the graph ql list type and provide the listed type directly. not deifning a class.
                 type: new GraphQLList(CatType), //need to specify the type of args in the list (similar to anyother generified strictly typed language)
-                resolve(owner)
+                args: {catId: {type: GraphQLID}},
+               resolve(owner, args)
                 {
-                    return axios.get(`http://localhost:3000/owners/${owner.id}/cats`).then(res => res.data)
+                    return axios.get(`http://localhost:3000/owners/${owner.id}/cats`).then(res => res.data.filter(cat=>!args.catId || args.catId === cat.id))
                 }
             }
         }
@@ -81,11 +82,13 @@ const CatType = new GraphQLObjectType({
                 type: GraphQLInt
             }
         ,
-          acceptedFoods: {
-            type: new GraphQLList(FoodType),
+          acceptedFood: {
+            type: FoodType,
             resolve(cat){
-                
-              return axios.get(`http://localhost:3000/cats/${cat.id}/foods`).then(res => res.data)
+                //note: it's fine to have to do multiple http requests to a -different server- that is hosting some data we are using.
+              //it just might not be the best example then, for the workshop (since the fetching logic is a little complicated)
+              //so maybe just change to the single food type, then show how to write a new root query to fetch all of the application foods.
+              return axios.get(`http://localhost:3000/foods/${cat.foodId}/`).then(res => res.data)
             }
           },
             owner: {
@@ -122,6 +125,12 @@ const query = new GraphQLObjectType({
             resolve(){
               return axios.get("http://localhost:3000/owners/").then(res=>res.data)
             }
+      },
+      foods: {
+        type: new GraphQLList(FoodType),
+        resolve(){
+          return axios.get("http://localhost:3000/foods").then(res=>res.data)
+        }
       },
         cat: {
             type: CatType,
@@ -191,11 +200,11 @@ const mutation = new GraphQLObjectType({
             }
         },
       //deconstruct args
-      addAcceptedFood: {
+      setAcceptedFood: {
             type: CatType,
             args: {id: {type: new GraphQLNonNull(GraphQLID)}, foodId: {type: new GraphQLNonNull(GraphQLID)}},
             resolve(parentValue, {id, foodId}){
-              return axios.patch(`http://localhost:3000/cats/${id}`, {foods: [...foods, foodId]}).then(res=>res.data)
+              return axios.patch(`http://localhost:3000/cats/${id}`, {foodId}).then(res=>res.data)
             }
       }
     }
