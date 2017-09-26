@@ -13,6 +13,7 @@ const {
     GraphQLObjectType,
     GraphQLString,
     GraphQLInt,
+    GraphQLID,
     GraphQLList,
     GraphQLSchema,
     GraphQLNonNull
@@ -20,6 +21,15 @@ const {
 
 const axios = require('axios')
 
+
+const BreedType = new GraphQLObjectType({
+    name: "Breed",
+    fields: () => ({
+        id: {type: GraphQLID},
+        name: {type: GraphQLString},
+        description: {type: GraphQLString}
+    })
+})
 
 const OwnerType = new GraphQLObjectType({
     name: 'Owner', //note that due to circular referencing between the cat and the owner types it is necessary to wrap the definition of the fields object
@@ -29,7 +39,7 @@ const OwnerType = new GraphQLObjectType({
     fields: ()=>(
         {
             id: {
-                type: GraphQLString
+                type: GraphQLID
             }
         ,
             name: {
@@ -53,7 +63,7 @@ const CatType = new GraphQLObjectType({
     fields: ()=> (
         {
             id: {
-                type: GraphQLString
+                type: GraphQLID
             }
         ,
             name: {
@@ -61,7 +71,10 @@ const CatType = new GraphQLObjectType({
             }
         ,
             breed: {
-                type: GraphQLString
+                type: BreedType,
+                  resolve(cat, args){
+                    return axios.get(`http://localhost:3000/breeds/${cat.breedId}`).then(res => res.data)
+                  }
             }
         ,
             age: {
@@ -91,16 +104,22 @@ const CatType = new GraphQLObjectType({
 const query = new GraphQLObjectType({
     name: 'Root',
     fields: {
+        cats: {
+            type: new GraphQLList(CatType),
+             resolve(parentValue){
+               return axios.get("http://localhost:3000/cats/").then(res=>res.data)
+             }
+        },
         cat: {
             type: CatType,
-            args: {id: {type: GraphQLString}},
+            args: {id: {type: GraphQLID}},
             resolve(parentValue, args) {
                 return axios.get(`http://localhost:3000/cats/${args.id}`).then(res=>res.data)
             }
         },
         owner: {
             type: OwnerType,
-            args: {id: {type: GraphQLString}},
+            args: {id: {type: GraphQLID}},
             resolve(parentValue, args){
                 //clearly the advantage here is, we only ever need to return
                 return axios.get(`http://localhost:3000/owners/${args.id}`).then(res=>res.data)
@@ -121,7 +140,7 @@ const mutation = new GraphQLObjectType({
             //not the whole owner
             args: {
                 //we'll say that the age and ownerId will be optional
-                id: {type: new GraphQLNonNull(GraphQLString)},
+                id: {type: new GraphQLNonNull(GraphQLID)},
                 age: {type: GraphQLInt},
                 name: {type: new GraphQLNonNull(GraphQLString)},
                 breed: {type: new GraphQLNonNull(GraphQLString)},
@@ -138,14 +157,14 @@ const mutation = new GraphQLObjectType({
         //nice intuitive domain specifically named routes
         deleteCat: {
             type: CatType,
-            args: {id: {type: new GraphQLNonNull(GraphQLString)}}, //gotcha: forgetting to mark a required field within the new graph ql non null helper object
+            args: {id: {type: new GraphQLNonNull(GraphQLID)}}, //gotcha: forgetting to mark a required field within the new graph ql non null helper object
             resolve(parentValue, {id}){
                 return axios.delete(`http://localhost:3000/cats/${id}`).then(res=>res.data)
             }
         },
         setCatAge: {
             type: CatType,
-            args: {id: {type: new GraphQLNonNull(GraphQLString)}, age: {type: new GraphQLNonNull(GraphQLInt)}},
+            args: {id: {type: new GraphQLNonNull(GraphQLID)}, age: {type: new GraphQLNonNull(GraphQLInt)}},
             resolve(parentValue, {id, age}){
                 return axios.patch(`http://localhost:3000/cats/${id}`, {age}).then(res=>res.data)
             }
@@ -153,7 +172,7 @@ const mutation = new GraphQLObjectType({
         //otherwise may need to do so oneself
         setCatOwner: {
             type: CatType,
-            args: {id: {type: new GraphQLNonNull(GraphQLString)}, ownerId: {type: new GraphQLNonNull(GraphQLString)}},
+            args: {id: {type: new GraphQLNonNull(GraphQLID)}, ownerId: {type: new GraphQLNonNull(GraphQLString)}},
             resolve(parentValue, {id, ownerId}){
                 return axios.patch(`http://localhost:3000/cats/${id}`, {ownerId}).then(res=>res.data)
             }
