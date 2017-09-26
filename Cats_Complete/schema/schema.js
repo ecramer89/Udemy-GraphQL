@@ -1,13 +1,3 @@
-/*
-
-general note there are alternative graph ql clients, such as apollo. they differ from the express client in that you end up defining the graph ql types and
-resolver runcvtions in separate files
-
-
-
- */
-
-
 
 const {
     GraphQLObjectType,
@@ -15,6 +5,7 @@ const {
     GraphQLInt,
     GraphQLID,
     GraphQLList,
+    GraphQLFloat,
     GraphQLSchema,
     GraphQLNonNull
 } = require('graphql')
@@ -58,6 +49,15 @@ const OwnerType = new GraphQLObjectType({
     )
 })
 
+const FoodType = new GraphQLObjectType({
+    name: "Food",
+    fields: ()=>({
+        id: {type: GraphQLID},
+        name: {type: GraphQLString},
+        price: {type: GraphQLFloat}
+    })
+})
+
 const CatType = new GraphQLObjectType({
     name: 'Cat',
     fields: ()=> (
@@ -81,6 +81,13 @@ const CatType = new GraphQLObjectType({
                 type: GraphQLInt
             }
         ,
+          acceptedFoods: {
+            type: new GraphQLList(FoodType),
+            resolve(cat){
+                
+              return axios.get(`http://localhost:3000/cats/${cat.id}/foods`).then(res => res.data)
+            }
+          },
             owner: {
                 type: OwnerType,
                     //parentValue is just the data that was returned for the containing query.
@@ -110,6 +117,12 @@ const query = new GraphQLObjectType({
                return axios.get("http://localhost:3000/cats/").then(res=>res.data)
              }
         },
+      owners: {
+            type: new GraphQLList(OwnerType),
+            resolve(){
+              return axios.get("http://localhost:3000/owners/").then(res=>res.data)
+            }
+      },
         cat: {
             type: CatType,
             args: {id: {type: GraphQLID}},
@@ -176,7 +189,15 @@ const mutation = new GraphQLObjectType({
             resolve(parentValue, {id, ownerId}){
                 return axios.patch(`http://localhost:3000/cats/${id}`, {ownerId}).then(res=>res.data)
             }
-        }
+        },
+      //deconstruct args
+      addAcceptedFood: {
+            type: CatType,
+            args: {id: {type: new GraphQLNonNull(GraphQLID)}, foodId: {type: new GraphQLNonNull(GraphQLID)}},
+            resolve(parentValue, {id, foodId}){
+              return axios.patch(`http://localhost:3000/cats/${id}`, {foods: [...foods, foodId]}).then(res=>res.data)
+            }
+      }
     }
 })
 

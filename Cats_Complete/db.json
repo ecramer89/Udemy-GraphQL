@@ -5,21 +5,24 @@
       "name": "Lily",
       "breedId": "37abd598-953e-4b57-b758-f7ca81a11781",
       "age": 12,
-      "ownerId": "c5beed2d-e896-4032-a0b6-6f8609ad5c82"
+      "ownerId": "c5beed2d-e896-4032-a0b6-6f8609ad5c82",
+      "foods": ["6b6719a3-8eff-453d-94d5-136979980c1e", "2efa93da-b3c7-4e93-8900-beeaa1bd5130"]
     },
     {
       "id": "1b1945f4-d4d3-404b-9ea5-e1ea9451f381",
       "name": "Vesper",
       "breedId": "e4f5c9e1-da71-41bc-bd12-85d1e349f177",
       "age": 4,
-      "ownerId": "9b526845-8109-45ed-bea9-2d7aa0b796c3"
+      "ownerId": "9b526845-8109-45ed-bea9-2d7aa0b796c3",
+      "foods": []
     },
     {
       "id": "cd42d1a6-d307-4713-b4b5-6d37fdb3505a",
       "name": "Chase",
       "breedId": "37abd598-953e-4b57-b758-f7ca81a11781",
       "age": 4,
-      "ownerId": "9b526845-8109-45ed-bea9-2d7aa0b796c3"
+      "ownerId": "9b526845-8109-45ed-bea9-2d7aa0b796c3",
+      "foods": ["6b6719a3-8eff-453d-94d5-136979980c1e"]
     }
   ],
   "owners": [
@@ -43,5 +46,17 @@
         "name": "longhair",
         "description": "generally cantankerous. Not advised for newbie cat owners"
      }
-    ]
+    ],
+  "foods": [
+    {
+      "id": "6b6719a3-8eff-453d-94d5-136979980c1e",
+      "name": "Friskies",
+      "price": 1.25
+    },
+    {
+      "id": "2efa93da-b3c7-4e93-8900-beeaa1bd5130",
+      "name": "Fancy Feast",
+      "price": 3.50
+    }
+  ]
 }
