@@ -1,40 +1,46 @@
 {
   "cats": [
     {
-      "id": "1",
+      "id": "e4a042de-a18b-4c99-933c-0e72cd59dfad",
       "name": "Lily",
       "breed": "Long hair",
       "age": 12,
       "ownerId": "0"
     },
     {
-      "id": "2",
+      "id": "1b1945f4-d4d3-404b-9ea5-e1ea9451f381",
       "name": "Vesper",
       "breed": "Orange tabby",
       "age": 4,
       "ownerId": "1"
     },
     {
-      "id": "4",
+      "id": "3328eb06-e352-4c44-b1df-5ec04e39040d",
       "name": "Puzzle",
       "breed": "Calico",
       "age": 5
-    },
-    {
-      "id": "5",
-      "name": "Antony",
-      "breed": "British Blue",
-      "ownerId": "0"
     }
   ],
   "owners": [
     {
-      "id": "0",
+      "id": "c5beed2d-e896-4032-a0b6-6f8609ad5c82",
       "name": "Annette"
     },
     {
-      "id": "1",
+      "id": "9b526845-8109-45ed-bea9-2d7aa0b796c3",
       "name": "Lucas"
     }
-  ]
+  ],
+    "breeds": [
+      {
+        "id": "37abd598-953e-4b57-b758-f7ca81a11781",
+        "name": "shorthair",
+        "description": "common and low maintenance"
+      },
+      {
+        "id": "e4f5c9e1-da71-41bc-bd12-85d1e349f177",
+        "name": "longhair",
+        "description": "generally cantankerous. Not advised for newbie cat owners"
+     }
+    ]
 }
