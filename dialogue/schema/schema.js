@@ -2,43 +2,48 @@ const {
     GraphQLString,
     GraphQLObjectType,
     GraphQLList,
-    GraphQLSchema
+    GraphQLSchema,
+    GraphQLNonNull,
+    GraphQLID
 } = require('graphql')
 
+const uuid = require('uuid')
+
+const characterId = uuid();
+const responseIdA = uuid();
+const responseIdB = uuid();
 
 
 const sampleCharacters = [{
-    id: "0",
+    id: characterId,
     name: "kaz",
-    responseId: "1"
+    responseId: responseIdA, //id of the current response
+    responses: [responseIdA, responseIdB]
+
 }]
-const sampleInputs = [{
-    id: "2",
-    text: "I like cats",
-    responseId: "3"
-}]
+
 const sampleResponses = [
     {
-       id: "1",
+       id: responseIdA,
        text: "what do you like?",
-       inputIds: ["2"]
+       edgeIds: []
     },
 
     {
-        id: "3",
+        id: responseIdB,
         text: "good to hear?",
-        inputIds: []
+        edgeIds: []
 
     }
 
 ]
 
-//in the graphql schema we define all relations between types.
-//because our database will probably just have a list of ids or an id, we need to define a resolver function to tell graphql how exactly o
-//retrieve it
+const sampleEdges = []
+
 const CharacterType = new GraphQLObjectType({
     name: "Character",
     fields: ()=>({
+        id: {type: GraphQLID},
         name: {type: GraphQLString},
         currentText: {
             type: ResponseType,
@@ -49,40 +54,70 @@ const CharacterType = new GraphQLObjectType({
     })
 })
 
-
-const InputType = new GraphQLObjectType({
-    name: "Input",
-    fields: ()=>({ //trick to avoid circular references
-        text: {type: GraphQLString},
-        leadsTo: {
+const EdgeType = new GraphQLObjectType({
+    name: "Edge",
+    fields: () => ({
+        id: {type: GraphQLID},
+        from: {
             type: ResponseType,
-            resolve(input){
-                return sampleResponses.find(response=>response.id === input.responseId)
+            resolve(edge){
+                return sampleResponses.find(response => response.id === edge.fromResponseId)
+            }
+        },
+        playerInput: {type: GraphQLString},
+        to: {
+            type: ResponseType,
+            resolve(edge) {
+                return sampleResponses.find(response => response.id === edge.toResponseId)
             }
         }
     })
 })
 
 
+
 const ResponseType = new GraphQLObjectType({
     name: "Response",
     fields: ()=>({
+        id: {type: GraphQLID},
        text: {type: GraphQLString},
-        acceptedInput: {
-           type: new GraphQLList(InputType),
+        edges: {
+           type: new GraphQLList(EdgeType),
             resolve(response){
-               return response.inputIds.map(inputId=>sampleInputs.find(input=>input.id === inputId))
+               return response.edgeIds.map(edgeId=>sampleEdges.find(edge=>edge.id === edgeId))
             }
-       }
+       },
+
     })
 })
 
-//in graphql the input to each query is the value that was returned by the preceding query. so what happens when there weren't any preceding queries?
+const mutation = new GraphQLObjectType({
+    name: "Mutation",
+    fields: {
+        advanceDialogue: {
+            type: CharacterType,
+            args: {
+                    characterId: new GraphQLNonNull(GraphQLID),
+                    playerInput: GraphQLString
+                },
+                resolve(parentValue, args){
+                    const currentCharacter = sampleCharacters.find(character => character.id === args.characterId)
+                    const currentCharacterResponse = sampleResponses.find(response => response.id === currentCharacter.responseId)
+                    const edge = currentCharacterResponse.edges.find(edge => edge.playerInput === args.playerInput) //or matches, whatever
+                    if(edge){
+                        const nextCharacterResponseId = edge.toResponseId;
+                        //patch once we swap on json server for now just update
+                        currentCharacter.responseId = nextCharacterResponseId;
+                    }
+                }
+        },
+        //addCharacterResponse
+        //setCharacterInitialResponse
+        //addEdgeToResponse
+    }
+})
 
-//the name doesn't really matter, but each field defines an entry point into the graph.
-//i'm saying that you could in principle as a user of the application from the outside GET any of these resouces, but realistically since
-//inputs and responses are associated with a character (and don't really exist on their own)
-//i wouldn't need to. because actually as you can see, my fdefinition of the character defines how to fetch the data of the input and that of the responses defineshow to fetch data for the responses
+
 const query = new GraphQLObjectType({
     name: "query",
     fields: {
